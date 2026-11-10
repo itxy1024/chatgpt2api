@@ -59,27 +59,25 @@
 ### 一键安装
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/yukkcat/chatgpt2api/main/deploy/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/itxy1024/chatgpt2api/main/deploy/install.sh \
+  | sudo env CHATGPT2API_IMAGE=ghcr.io/itxy1024/chatgpt2api:latest bash -s -- --repo-owner itxy1024 --repo-name chatgpt2api
 ```
 
 安装时可选择 SQLite、本地 PostgreSQL 18 容器或已有 PostgreSQL URL。SQLite 无需额外配置；本地 PostgreSQL 由 Compose 自动启动并持久化。
 
-固定安装 `v3.2.3`：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/yukkcat/chatgpt2api/v3.2.3/deploy/install.sh | sudo bash -s -- --branch v3.2.3
-```
+先等待本 fork 的镜像构建成功。固定提交或版本镜像的步骤见[部署与升级](./docs/deployment.md)。
 
 ### Docker Compose
 
-默认使用 SQLite：
+本 fork 推送分支后会自动构建并发布 amd64 / arm64 镜像，默认分支更新 `ghcr.io/itxy1024/chatgpt2api:latest`。先在 GitHub Actions 启用并等待镜像构建成功，再部署。标签、权限、更新及回滚步骤见[部署与自动构建说明](./docs/deployment.md)。默认使用 SQLite：
 
 ```bash
-git clone https://github.com/yukkcat/chatgpt2api.git
+git clone https://github.com/itxy1024/chatgpt2api.git
 cd chatgpt2api
-cp .env.example .env
+test -f .env || cp .env.example .env
 # 编辑 .env，为 CHATGPT2API_AUTH_KEY 设置私有密钥
 test -f config.json || printf '{}\n' > config.json
+docker compose pull
 docker compose up -d
 ```
 

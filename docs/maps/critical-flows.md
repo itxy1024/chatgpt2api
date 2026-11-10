@@ -177,6 +177,22 @@ animation, layout, and responsive behavior.
 
 ## Managed-container online update
 
+Image-based deployment is owned by `.github/workflows/docker-publish.yml`,
+`Dockerfile`, and `deploy/docker-entrypoint.sh`. Branch pushes verify the backend
+and console before publishing multi-platform GHCR images; only the default
+branch updates `latest`. Pull requests never publish. A `v*` tag push also
+publishes the existing online-update bundle. CI passes the commit SHA as
+`SOURCE_REVISION`; local builds derive a content digest when it is absent.
+The image stores that identity in `/opt/chatgpt2api/.image-revision`. The entrypoint
+compares it with `/app/.chatgpt2api-image-version` to refresh runtime files even
+when `VERSION` has not changed. Stable-image restarts preserve runtime files,
+and refreshing keeps data, bootstrap configuration, and the runtime virtual
+environment. Legacy images fall back to `VERSION` as their identity.
+
+The fork's control-panel update source remains the upstream GitHub Release.
+Custom fork deployments use the image pull/recreate flow described in
+[`../deployment.md`](../deployment.md) to retain their own changes.
+
 ```mermaid
 sequenceDiagram
     participant Shell as AppShell update overlay

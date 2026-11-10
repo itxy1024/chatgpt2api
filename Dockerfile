@@ -1,6 +1,6 @@
 ARG TARGETARCH
 
-# The console output is architecture-independent, so build it once natively.
+# 控制台产物与目标架构无关，使用构建机架构构建一次。
 FROM --platform=$BUILDPLATFORM node:22-alpine AS web-build
 
 WORKDIR /app/web-vue
@@ -65,6 +65,15 @@ COPY --from=image-upscale-build /app/scripts/image_upscale/node_modules ./script
 COPY --from=web-build /app/web-vue/dist ./web_dist
 COPY deploy/docker-entrypoint.sh /usr/local/bin/chatgpt2api-entrypoint
 RUN chmod 0755 /usr/local/bin/chatgpt2api-entrypoint
+
+# 同版本号的不同提交也必须刷新运行目录；本地构建未传提交时使用产物摘要。
+ARG SOURCE_REVISION
+RUN if [ -n "$SOURCE_REVISION" ]; then \
+      printf '%s\n' "$SOURCE_REVISION" > .image-revision; \
+    else \
+      find main.py VERSION pyproject.toml uv.lock api contracts services utils scripts web_dist \
+        -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d ' ' -f 1 > .image-revision; \
+    fi
 
 WORKDIR /app
 
